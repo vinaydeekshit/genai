@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Dashboard</title>
+    <style>
+    /* Navigation Bar */
+.nav {
+    width: 100%;
+    height: 50px;
+    background-color: rgb(77, 77, 119);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    z-index: 1000; /* Ensure it's above other content */
+}
+
+/* Content below the Navigation Bar */
+.content {
+    padding-top: 50px; /* Add padding equal to the height of the navigation bar */
+}
+
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0;
+        }
+
+        .home-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .logout-menu {
+            display: none;
+            position: absolute;
+            right: 20px;
+            top: 50px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .logout-menu a {
+            display: block;
+            padding: 10px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .logout-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .logout-menu a:hover {
+            background-color: #f4f4f4;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 60px; 
+            bottom: 0;
+            left: 0;
+            overflow: auto;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+        }
+
+        .content {
+            margin-left: 220px; 
+            padding: 20px;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .text-area-container, .file-upload-container, .email-summary-container, .query-generator-container {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .text-area-container textarea, .email-summary-container textarea, .query-generator-container textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .text-area-container button, .email-summary-container button, .query-generator-container button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: rgb(77, 77, 119);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .text-area-container button:hover, .email-summary-container button:hover, .query-generator-container button:hover {
+            background-color: rgb(60, 60, 100);
+        }
+
+        .file-upload-container input[type="file"] {
+            width: 40%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-container button {
+            padding: 10px 20px;
+            background-color: rgb(77, 77, 119);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .file-upload-container button:hover {
+            background-color: rgb(60, 60, 100);
+        }
+
+        .intro-text {
+            display: block;
+            margin-top: 30px;
+
+        }
+        .intro-paragraph {
+            display: block; /* Ensure intro paragraph is visible initially */
+        }
+
+        .query-generator-container {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .query-generator-container textarea {
+            width: 100%;
+            height: 50px; /* Adjust height as needed */
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .query-generator-container button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: rgb(77, 77, 119);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .query-generator-container button:hover {
+            background-color: rgb(60, 60, 100);
+        }
+
+      
+
+    </style>
+</head>
+<body onload="resetPageState()">
+<!-- Add this somewhere in your HTML file -->
+<div id="loading-indicator" style="display:none;">
+    <p>Generating...</p>
+    <!-- You can also use a spinner if you prefer -->
+    <div class="spinner"></div>
+</div>
+
+
+
+    <div class="nav">
+        <img src="{{ url_for('static', filename='images/waisl.png') }}" alt="Waisl logo" class="logo">
+        <button class="home-btn" onclick="toggleLogoutMenu()">Home</button>
+        <div id="logout-menu" class="logout-menu">
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </div>
+    <div class="sidebar">
+        <a href="#generate_mom_summary" onclick="showTextArea()">
+            <img src="{{ url_for('static', filename='images/teams.png') }}" alt="teams Icon" class="icon"> Generate MOM, Tasks, and Summary
+        </a>
+        <a href="#document_summary" onclick="showFileUpload()">
+            <img src="{{ url_for('static', filename='images/document.png') }}" alt="document Icon" class="icon"> Document Summary
+        </a>
+        <a href="#email_summary" onclick="showEmailSummary()">
+            <img src="{{ url_for('static', filename='images/email.png') }}" alt="email Icon" class="icon"> Email Summary
+        </a>
+        <a href="#query_generator" onclick="showQueryGenerator()">
+            <img src="{{ url_for('static', filename='images/sql.png') }}" alt="sql Icon" class="icon"> Query Generator
+        </a>
+    </div>
+    <div class="content">
+        <div id="intro-text" class="intro-text">
+            <h1>Welcome to the Dashboard</h1>
+            <p>This is the place to manage your various tasks and documents. Choose an option from the sidebar to get started.</p>
+        </div>
+        <div id="intro-paragraph" class="intro-paragraph">
+            <p>Here you can generate MOM, summarize documents, or create email summaries.</p>
+        </div>
+        <div id="text-area-container" class="text-area-container">
+            <textarea placeholder="Enter text here..."></textarea>
+            <button onclick="generateSummary()">Generate Summary</button>
+        </div>
+        <div id="file-upload-container" class="file-upload-container">
+            <input type="file" id="file-upload" accept=".pdf">
+            <button onclick="uploadFile()">Upload and Summarize</button>
+        </div>
+        <div id="email-summary-container" class="email-summary-container">
+            <textarea placeholder="Enter email content here..."></textarea>
+            <button onclick="generateEmailSummary()">Generate Email Summary</button>
+        </div>
+        <div id="query-generator-container" class="query-generator-container">
+            <textarea placeholder="Enter your query here..."></textarea>
+            <button onclick="generateQuery()">Generate Query</button>
+        </div>
+    </div>
+    <script>
+ function showLoadingIndicator() {
+        document.getElementById('loading-indicator').style.display = 'block';
+    }
+
+    function hideLoadingIndicator() {
+        document.getElementById('loading-indicator').style.display = 'none';
+    }
+
+        function toggleLogoutMenu() {
+            var menu = document.getElementById('logout-menu');
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
+    
+        function logout() {
+    // Redirect to login.html upon clicking the logout button
+    window.location.href = '/login';
+}
+    
+        function showTextArea() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'block';
+        }
+    
+        function showFileUpload() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'block';
+        }
+    
+        function showEmailSummary() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'block';
+        }
+    
+        function showQueryGenerator() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'block';
+        }
+    
+        function generateSummary() {
+    var text = document.querySelector('#text-area-container textarea').value;
+    if (text.trim() === '') {
+        alert('Please enter some text to summarize.');
+        return;
+    }
+
+    showLoadingIndicator(); // Show loading spinner while waiting for the response
+
+    fetch('/generate_mom_summary_tasks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            'meeting_text': text
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoadingIndicator(); // Hide loading spinner once data is received
+
+        var summaryElement = document.createElement('div');
+        summaryElement.className = 'summary-result';
+        summaryElement.innerHTML = `
+            <h3>Summary:</h3>
+            <p>${data.summary}</p>
+            <h3>MoM:</h3>
+            <p>${data.mom}</p>
+            <h3>Tasks:</h3>
+            <p>${data.tasks}</p>
+        `;
+        document.querySelector('#text-area-container').appendChild(summaryElement);
+    })
+    .catch(error => {
+        hideLoadingIndicator(); // Hide loading spinner if there's an error
+        console.error('Error:', error);
+        alert('There was an error generating the summary.');
+    });
+}
+
+    
+        function uploadFile() {
+            var fileInput = document.getElementById('file-upload');
+            var file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('file', file);
+
+            showLoadingIndicator();
+
+            fetch('/document_summary', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoadingIndicator();
+                var summaryElement = document.createElement('div');
+                summaryElement.className = 'summary-result';
+                summaryElement.innerHTML = `
+                    <h3>Document Summary:</h3>
+                    <p>${data.summary}</p>
+                `;
+                document.querySelector('#file-upload-container').appendChild(summaryElement);
+            })
+            .catch(() => {
+                hideLoadingIndicator();
+                alert('An error occurred while summarizing the document.');
+            });
+        }
+    
+        function generateQuery() {
+    var queryText = document.querySelector('#query-generator-container textarea').value;
+    if (queryText.trim() === '') {
+        alert('Please enter the query text.');
+        return;
+    }
+
+    fetch('/generate_sql_query', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            text: queryText
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        var queryElement = document.createElement('div');
+        queryElement.className = 'query-result';
+        queryElement.innerHTML = `<h3>Generated Query:</h3><p>${data.query}</p>`;
+        document.querySelector('#query-generator-container').appendChild(queryElement);
+    })
+    .catch(() => {
+        alert('An error occurred while generating the SQL query.');
+    });
+}
+
+    
+        function resetPageState() {
+            document.getElementById('intro-text').style.display = 'block';
+            document.getElementById('intro-paragraph').style.display = 'block';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
