@@ -2,7 +2,8 @@ Flask==2.2.2
 transformers==4.23.1
 nltk==3.7
 PyMuPDF==1.19.6
-langchain-community==0.0.149
+langchain-community==0.2.6
+langchain==0.2.6
 flask-caching==1.10.1
 gunicorn==20.1.0
 
