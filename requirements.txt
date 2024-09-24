@@ -8,3 +8,5 @@ flask-caching==1.11.1
 python-dotenv==1.0.0  # optional
 PyMuPDF==1.21.0  # Add this line for PyMuPDF
 torch==2.0.0 
+transformers==4.23.1
+nltk==3.7
