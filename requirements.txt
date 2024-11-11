@@ -10,3 +10,4 @@ PyMuPDF==1.21.0  # For PDF handling
 torch==2.0.0  # PyTorch for model inference
 transformers==4.23.1  # Transformers for NLP models
 nltk==3.7  # Natural Language Toolkit
+python-docx==0.8.11  # For DOCX handling
