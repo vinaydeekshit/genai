@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+       body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f4f4f4;
+    overflow: hidden; 
+}
+
+.nav {
+    width: 100%;
+    height: 50px;
+    background-color: rgb(77, 77, 119);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+}
+
+.container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    overflow: hidden; 
+}
+
+.left, .right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; 
+}
+
+.left {
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    overflow: hidden; 
+}
+
+.right {
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; 
+}
+
+.right img {
+    width: 100%;
+    height: auto; 
+    max-height: 100%; 
+    object-fit: cover; 
+    border-radius: 10px; 
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.form-field {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-field label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-field input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+
+        .required {
+            color: red;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <img src="{{ url_for('static', filename='images/waisl.png') }}" alt="Waisl logo" class="logo">
+    </div>
+    <div class="container">
+        <div class="left">
+            <div id="auth-container">
+                <h2>Login or Sign Up</h2>
+                <button onclick="showSignIn()">Sign In</button>
+                <button onclick="showSignUp()">Sign Up</button>
+            </div>
+            <div id="signup-form" style="display:none;">
+                <h2>Sign Up</h2>
+                <div class="form-field">
+                    <label>Employee Name <span class="required">*</span></label>
+                    <input type="text" id="employee-name" placeholder="" required>
+                </div>
+                <div class="form-field">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" id="email" placeholder="" required>
+                </div>
+                <div class="form-field">
+                    <label>Employee ID <span class="required">*</span></label>
+                    <input type="text" id="employee-id-signup" placeholder="" required>
+                </div>
+                <div class="form-field">
+                    <label>Password <span class="required">*</span></label>
+                    <input type="password" id="password-signup" placeholder="" required>
+                </div>
+                <div class="form-field">
+                    <label>Re-enter Password <span class="required">*</span></label>
+                    <input type="password" id="re-password" placeholder="" required>
+                </div>
+                <button onclick="signUp()">Sign Up</button>
+                <p>If you already signed up, <a href="#" onclick="showSignIn()">click here</a> to sign in.</p>
+            </div>
+            <div id="signin-form" style="display:none;">
+                <h2>Sign In</h2>
+                <div class="form-field">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="text" id="email-signin" placeholder="" required>
+                </div>
+                <div class="form-field">
+                    <label>Password <span class="required">*</span></label>
+                    <input type="password" id="password-signin" placeholder="" required>
+                </div>
+                <button onclick="signIn()">Sign In</button>
+                <p>If you are not signed up yet, <a href="#" onclick="showSignUp()">click here</a> to sign up.</p>
+            </div>
+        </div>
+        <div class="right">
+            <img src="{{ url_for('static', filename='images/meeting3.avif') }}" alt="Meeting Icon">
+        </div>
+    </div>
+    <script>
+        function showSignIn() {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('signin-form').style.display = 'block';
+            document.getElementById('signup-form').style.display = 'none';
+        }
+
+        function showSignUp() {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('signin-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+        }
+
+        function signUp() {
+           
+            const EmployeeName = document.getElementById('employee-name').value;
+            const email = document.getElementById('email').value;
+            const employeeId = document.getElementById('employee-id-signup').value;
+            const password = document.getElementById('password-signup').value;
+            const rePassword = document.getElementById('re-password').value;
+
+           
+            if (!EmployeeName||!email || !employeeId || !password || !rePassword) {
+                alert('Please fill in all required fields!');
+                return;
+            }
+
+            if (!/^[a-zA-Z\s]+$/.test(EmployeeName)) {
+    alert('Employee Name should only contain alphabets and spaces!');
+    return;
+}
+
+if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|in)$/.test(email)) {
+    alert('Email should be a valid address ending with .com or .in!');
+    return;
+}
+
+            if (!/^W/.test(employeeId)) {
+                alert('Employee ID should start with the letter W!');
+                return;
+            }
+
+            const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+            if (!passwordPattern.test(password)) {
+                alert('Password must be at least 8 characters long, include at least one special symbol, one number, and start with a capital letter!');
+                return;
+            }
+
+            if (password !== rePassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            const user = {
+                EmployeeName,
+                email,
+                employeeId,
+                password
+            };
+
+            localStorage.setItem('user_' + email, JSON.stringify(user));
+            alert('Sign Up successful!');
+            showSignIn();
+        }
+
+        function signIn() {
+            const email = document.getElementById('email-signin').value;
+            const password = document.getElementById('password-signin').value;
+
+            if (!email || !password) {
+                alert('Please fill in all required fields!');
+                return;
+            }
+
+            const storedUser = localStorage.getItem('user_' + email);
+            if (!storedUser) {
+                alert('User not found!');
+                return;
+            }
+
+            const user = JSON.parse(storedUser);
+            if (user.password === password) {
+                alert('Sign In successful!');
+                window.location.href = '/dashboard'; 
+            } else {
+                alert('Incorrect password!');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        
+        document.getElementById('employee-name').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('employee-id-signup').value = '';
+        document.getElementById('password-signup').value = '';
+        document.getElementById('re-password').value = '';
+
+        
+        document.getElementById('email-signin').value = '';
+        document.getElementById('password-signin').value = '';
+    });
+    </script>
+</body>
+</html>

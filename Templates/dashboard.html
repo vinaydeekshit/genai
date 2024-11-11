@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Dashboard</title>
+    <style>
+        /* Navigation Bar */
+        .nav {
+            width: 100%;
+            height: 50px;
+            background-color: rgb(77, 77, 119);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            /* Ensure it's above other content */
+        }
+
+        /* Content below the Navigation Bar */
+        .content {
+            padding-top: 50px;
+            /* Add padding equal to the height of the navigation bar */
+        }
+
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0;
+        }
+
+        .home-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .logout-menu {
+            display: none;
+            position: absolute;
+            right: 20px;
+            top: 50px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .logout-menu a {
+            display: block;
+            padding: 10px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .logout-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .logout-menu a:hover {
+            background-color: #f4f4f4;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            overflow: auto;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+        }
+
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .text-area-container,
+        .file-upload-container,
+        .email-summary-container,
+        .query-generator-container {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .text-area-container textarea,
+        .email-summary-container textarea,
+        .query-generator-container textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .text-area-container button,
+        .email-summary-container button,
+        .query-generator-container button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: rgb(77, 77, 119);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .text-area-container button:hover,
+        .email-summary-container button:hover,
+        .query-generator-container button:hover {
+            background-color: rgb(60, 60, 100);
+        }
+
+        .file-upload-container input[type="file"] {
+            width: 40%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-container button {
+            padding: 10px 20px;
+            background-color: rgb(77, 77, 119);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .file-upload-container button:hover {
+            background-color: rgb(60, 60, 100);
+        }
+
+        .intro-text {
+            display: block;
+            margin-top: 30px;
+
+        }
+
+        .intro-paragraph {
+            display: block;
+            /* Ensure intro paragraph is visible initially */
+        }
+
+        .query-generator-container {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .query-generator-container textarea {
+            width: 100%;
+            height: 50px;
+            /* Adjust height as needed */
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .query-generator-container button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: rgb(77, 77, 119);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .query-generator-container button:hover {
+            background-color: rgb(60, 60, 100);
+        }
+
+        
+    </style>
+</head>
+
+<body onload="resetPageState()">
+    <div id="loading-indicator" style="display:none;">
+        <p>Generating...</p>
+        <div class="spinner"></div>
+    </div>
+
+    <div class="nav">
+        <img src="{{ url_for('static', filename='images/waisl.png') }}" alt="Waisl logo" class="logo">
+        <button class="home-btn" onclick="toggleLogoutMenu()">Home</button>
+        <div id="logout-menu" class="logout-menu">
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </div>
+    <div class="sidebar">
+        <a href="#generate_mom_summary" onclick="showTextArea()">
+            <img src="{{ url_for('static', filename='images/teams.png') }}" alt="teams Icon" class="icon"> Generate MOM,
+            Tasks, and Summary
+        </a>
+        <a href="#document_summary" onclick="showFileUpload()">
+            <img src="{{ url_for('static', filename='images/document.png') }}" alt="document Icon" class="icon">
+            Document Summary
+        </a>
+        <a href="#email_summary" onclick="showEmailSummary()">
+            <img src="{{ url_for('static', filename='images/email.png') }}" alt="email Icon" class="icon"> Email Summary
+        </a>
+        <a href="#query_generator" onclick="showQueryGenerator()">
+            <img src="{{ url_for('static', filename='images/sql.png') }}" alt="sql Icon" class="icon"> Query Generator
+        </a>
+    </div>
+    <div class="content">
+        <div id="intro-text" class="intro-text">
+            <h1>Welcome to the Dashboard</h1>
+            <p>This is the place to manage your various tasks and documents. Choose an option from the sidebar to get
+                started.</p>
+        </div>
+        <div id="intro-paragraph" class="intro-paragraph">
+            <p>Here you can generate MOM, summarize documents, or create email summaries.</p>
+        </div>
+        <div id="text-area-container" class="text-area-container">
+            <textarea placeholder="Enter text here..."></textarea>
+            <div id="summary-container"></div>
+            <button onclick="generateMeetingSummary()">Generate Summary</button>
+        </div>
+        <div id="file-upload-container" class="file-upload-container">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" name="file" id="file-upload" accept=".pdf,.txt,.docx" required>
+                <button type="submit">Upload and Summarize</button>
+            </form>
+            <div id="summary"></div> 
+        </div>
+        
+        <div id="email-summary-container" class="email-summary-container">
+            <textarea id="emailContent" placeholder="Enter email content here..." rows="5" required></textarea>
+            <button onclick="generateEmailSummary()">Generate Email Summary</button>
+            <!-- Display the summary below the textarea -->
+            <div id="generatedSummary" class="generated-summary"></div>
+        </div>
+        
+        
+        
+        
+        
+        
+        
+
+
+        <div id="query-generator-container" class="query-generator-container">
+            <textarea placeholder="Enter your query here..."></textarea>
+            <button onclick="generateQuery()">Generate Query</button>
+        </div>
+    </div>
+    <script>
+        function showLoadingIndicator() {
+            document.getElementById('loading-indicator').style.display = 'block';
+        }
+
+        function hideLoadingIndicator() {
+            document.getElementById('loading-indicator').style.display = 'none';
+        }
+
+        function toggleLogoutMenu() {
+            var menu = document.getElementById('logout-menu');
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function logout() {
+            // Redirect to login.html upon clicking the logout button
+            window.location.href = '/login';
+        }
+
+        function showTextArea() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'block';
+        }
+
+        function showFileUpload() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'block';
+        }
+
+        function showEmailSummary() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'block';
+        }
+
+        function showQueryGenerator() {
+            document.getElementById('intro-text').style.display = 'none';
+            document.getElementById('intro-paragraph').style.display = 'none';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+    // Attach the event listener after the DOM is loaded
+    document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+        event.preventDefault();  // Prevent form submission through the browser
+        
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'An unknown error occurred');
+            }
+
+            const data = await response.json();
+            document.getElementById('summary').innerHTML = data.summary; // Display the summary here
+        } catch (error) {
+            console.error('Error:', error);
+            console.log(error.message);  // Display error message to the user
+        }
+    });
+});
+
+
+async function generateEmailSummary() {
+    const emailContent = document.getElementById('emailContent').value;
+
+    if (!emailContent) {
+        alert('Please enter the email content.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/email_summarize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: emailContent }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'An unknown error occurred');
+        }
+
+        const textResponse = await response.text();
+        console.log('Raw Response:', textResponse); // Log the raw response for debugging
+
+        if (!textResponse) {
+            throw new Error('Empty response from the backend');
+        }
+
+        const data = JSON.parse(textResponse);
+        console.log('Parsed Data:', data); // Log the parsed response for debugging
+
+        // Clear any existing summary before appending the new one
+        const summaryContainer = document.getElementById('generatedSummary');
+        summaryContainer.innerHTML = ''; // Clear any existing content
+
+        if (data && data.summary) {
+            // Create a new div to hold the summary and append it below the textarea
+            const summaryElement = document.createElement('div');
+            summaryElement.className = 'summary-result';
+            summaryElement.innerHTML = `<h3>Summarized Email:</h3><p>${data.summary}</p>`;
+            summaryContainer.appendChild(summaryElement);
+        } else {
+            throw new Error('No summary available');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert(error.message); // Display error message to the user
+    }
+}
+
+
+        function generateQuery() {
+            var queryText = document.querySelector('#query-generator-container textarea').value;
+            if (queryText.trim() === '') {
+                alert('Please enter the query text.');
+                return;
+            }
+
+            fetch('/generate_sql_query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: queryText
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    var queryElement = document.createElement('div');
+                    queryElement.className = 'query-result';
+                    queryElement.innerHTML = `<h3>Generated Query:</h3><p>${data.query}</p>`;
+                    document.querySelector('#query-generator-container').appendChild(queryElement);
+                })
+                .catch(() => {
+                    alert('An error occurred while generating the SQL query.');
+                });
+        }
+
+        //       function generateMeetingSummary() {
+        //     var text = document.querySelector('#text-area-container textarea').value;
+        //     if (text.trim() === '') {
+        //         alert('Please enter the text to summarize.');
+        //         return;
+        //     }
+
+        //     showLoadingIndicator();
+
+        //     fetch('/extract_meeting_info', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/x-www-form-urlencoded'
+        //         },
+        //         body: `transcript=${encodeURIComponent(text)}` // Ensure this key matches the backend
+        //     })
+        //     .then(response => {
+        //         if (!response.ok) {
+        //             return response.json().then(err => { throw new Error(err.error || 'Network response was not ok'); });
+        //         }
+        //         return response.json();
+        //     })
+        //     .then(data => {
+        //         hideLoadingIndicator();
+        //         if (data.error) {
+        //             alert(`Error: ${data.error}`); // Handle errors returned by the server
+        //         } else {
+        //             var summaryElement = document.createElement('div');
+        //             summaryElement.className = 'summary-result';
+        //             summaryElement.innerHTML = `<h3>Meeting Summary:</h3><p>${data.response}</p>`; // Adjusted to match your backend
+        //             document.querySelector('#text-area-container').appendChild(summaryElement);
+        //         }
+        //     })
+        //     .catch(error => {
+        //         hideLoadingIndicator();
+        //         alert(`An error occurred: ${error.message}`); // Show error message
+        //     });
+        // }
+
+        function generateMeetingSummary() {
+            var text = document.querySelector('#text-area-container textarea').value;
+            console.log(text)
+            if (text.trim() === '') {
+                alert('Please enter the text to summarize.');
+                return;
+            }
+
+            // Show loading indicator
+            showLoadingIndicator();
+
+            fetch('/extract_meeting_info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `transcript=${encodeURIComponent(text)}` // Ensure this key matches the backend
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Network response was not ok'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading indicator
+                    hideLoadingIndicator();
+
+                    // Clear any previous summary results
+                    document.querySelector('#summary-container').innerHTML = '';
+
+                    if (data.error) {
+                        alert(`Error: ${data.error}`); // Handle errors returned by the server
+                    } else {
+                        // Convert the response (Markdown) into HTML using marked.js
+                        var summaryHTML = marked.parse(data.response);
+
+                        var summaryElement = document.createElement('div');
+                        summaryElement.className = 'summary-result';
+                        summaryElement.innerHTML = `<h3>Meeting Summary:</h3>${summaryHTML}`;
+
+                        // Append the new summary to the summary container
+                        document.querySelector('#summary-container').appendChild(summaryElement);
+                    }
+                })
+                .catch(error => {
+                    hideLoadingIndicator();
+                    // alert(`An error occurred: ${error.message}`); // Show error message
+                    console.error(`An error occurred: ${error.message}`); // Show error message
+                    
+                });
+        }
+
+
+        function resetPageState() {
+            document.getElementById('intro-text').style.display = 'block';
+            document.getElementById('intro-paragraph').style.display = 'block';
+            document.getElementById('text-area-container').style.display = 'none';
+            document.getElementById('file-upload-container').style.display = 'none';
+            document.getElementById('email-summary-container').style.display = 'none';
+            document.getElementById('query-generator-container').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
