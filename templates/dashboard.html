@@ -358,7 +358,7 @@
       }
       #summary {
         padding-top: 1rem;
-        max-width: 80%;
+        width: 100%;
         scroll-behavior: smooth;
         min-height: 70vh;
         overflow-y: scroll;
@@ -366,14 +366,14 @@
  
       #summary-container {
         padding-top: 1rem;
-        max-width: 80%;
+        width: 100%;
         scroll-behavior: smooth;
         min-height: 70vh;
         overflow-y: scroll;
       }
       #generatedSummary {
         padding-top: 1rem;
-        max-width: 80%;
+        width: 100%;
         scroll-behavior: smooth;
         min-height: 70vh;
         overflow-y: scroll;
@@ -718,39 +718,50 @@
           alert(error.message); // Display error message to the user
         }
       }
+     
       function generateQuery() {
-        var queryText = document.querySelector(
-          "#query-generator-container textarea"
-        ).value;
-        if (queryText.trim() === "") {
-          alert("Please enter the query text.");
-          return;
-        }
-        showLoadingIndicator();
-        fetch("/generate_sql_query", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text: queryText,
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            var queryElement = document.createElement("div");
-            queryElement.className = "query-result";
-            queryElement.innerHTML = `<h3>Generated Query:</h3><p>${data.query}</p>`;
-            document
-              .querySelector("#query-generator-container")
-              .appendChild(queryElement);
- 
-            hideLoadingIndicator();
-          })
-          .catch(() => {
-            alert("An error occurred while generating the SQL query.");
-          });
+  var queryText = document.querySelector("#query-generator-container textarea").value;
+  if (queryText.trim() === "") {
+    alert("Please enter the query text.");
+    return;
+  }
+  
+  showLoadingIndicator();
+  
+  fetch("/generate_sql_query", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text: queryText,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Clear any previous query result before displaying a new one
+      var existingQuery = document.querySelector(".query-result");
+      if (existingQuery) {
+        existingQuery.remove();
       }
+
+      // Create and insert the generated query at the top of the container
+      var queryElement = document.createElement("div");
+      queryElement.className = "query-result";
+      queryElement.innerHTML = `<h3>Generated Query:</h3><p>${data.query}</p>`;
+      
+      // Insert the generated query at the top of the container
+      var container = document.querySelector("#query-generator-container");
+      container.insertBefore(queryElement, container.firstChild);
+
+      hideLoadingIndicator();
+    })
+    .catch(() => {
+      alert("An error occurred while generating the SQL query.");
+      hideLoadingIndicator();
+    });
+}
+
  
       function generateMeetingSummary() {
         var text = document.querySelector(
@@ -770,7 +781,7 @@
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: `transcript=${encodeURIComponent(text)}`, // Ensure this key matches the backend
+          body: `transcript=${encodeURIComponent(text)}`, 
         })
           .then((response) => {
             if (!response.ok) {
